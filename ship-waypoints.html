@@ -1,0 +1,152 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Marine Traffic Project</title>
+
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js" type="text/javascript"></script>
+
+        
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+            }
+        
+            #map {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                width: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        
+        
+        <h1>Waypoints</h1>
+
+        
+        <div id="googleMap" style="width:100%;height:400px;"></div>
+        <script>
+            var map = null;
+            var directionsService = null;
+            var directionsRenderer = null;
+            function initMap() {
+                var myLatLng = {lng: 104.149700, lat: 1.283970}
+                var mapProp = {
+                    center: myLatLng,
+                    zoom: 5,
+                    zoomControl: true,
+                    scaleControl: true
+                };
+                directionsService = new google.maps.DirectionsService;
+                directionsRenderer = new google.maps.DirectionsRenderer;
+                map = new google.maps.Map(document.getElementById("googleMap"), mapProp);
+                directionsRenderer.setMap(map);
+                /*PS01 Historical Vessel Track*/
+                $.getJSON(
+                        'https://services.marinetraffic.com/api/exportvesseltrack/68f2baf763582ad0600b5249748b5602cd65b26a/v:2/period:daily/days:7/mmsi:241486000/protocol:jsono',
+                        function (data) {
+                            var planCoordinates = [];
+                            $.each(data, function (key, item) {
+                                var mmsi = item.MMSI;
+                                var status = item.STATUS;
+                                var speed = item.SPEED;
+                                var lon = item.LON;
+                                var lat = item.LAT;
+                                var mmsi = item.MMSI;
+                                var course = item.COURSE;
+                                var heading = item.HEADING;
+                                var timestamp = item.TIMESTAMP;
+                                var ship_Id = item.SHIP_ID;
+                                var location = new google.maps.LatLng(lat, lon);
+                                planCoordinates.push(location);
+                                createMarker(location, mmsi);
+                                map.setCenter(location);
+                            });
+                            var shipPath = new google.maps.Polyline({
+                                path: planCoordinates,
+                                geodesic: true,
+                                strokeColor: '#FF0000',
+                                strokeOpacity: 1.0,
+                                strokeWeight: 2
+                            });
+
+                            shipPath.setMap(map);
+                        });
+
+                /*PS02 Vessel positions of a static fleet */
+                 $.getJSON(
+                    'https://services.marinetraffic.com/api/exportvessels/v:8/8205c862d0572op1655989d939f1496c092ksvs4/timespan:10/protocol:jsono',
+                    function (data) {
+                        var planCoordinates1 = [];
+                        /*retrieve the data for the first ship */
+                        $.each(data, function (key, item) {
+                            var mmsi = item.MMSI;
+                            var imo = item.IMO;
+                            var status = item.STATUS;
+                            var speed = item.SPEED;
+                            var lon1 = item.LON;
+                            var lat1 = item.LAT;
+                            var course = item.COURSE;
+                            var heading = item.HEADING;
+                            var timestamp = item.TIMESTAMP;
+                            var ship_Id = item.SHIP_ID;
+                            var dsrc = item.DSRC;
+                            var utc_Seconds = item.UTC_SECONDS;
+                            var location1 = new google.maps.LatLng(lat1, lon1);
+                            planCoordinates1.push(location1);
+                            createMarker(location1, mmsi);
+                            map.setCenter(location1);
+                        });
+                        
+
+                    });
+
+                    /*PS03 Vessel positions of a dynamic fleet */
+                $.getJSON(
+                    'https://services.marinetraffic.com/api/exportvessels/v:8/8205c862d0572op1655989d939f1496c092ksvs4/timespan:10/protocol:jsono',
+                    function (data) {
+                        var planCoordinates2 = [];
+                        $.each(data, function (key, item) {
+                            var mmsi = item.MMSI;
+                            var imo = item.IMO;
+                            var status = item.STATUS;
+                            var speed = item.SPEED;
+                            var lon2 = item.LON;
+                            var lat2 = item.LAT;
+                            var course = item.COURSE;
+                            var heading = item.HEADING;
+                            var timestamp = item.TIMESTAMP;
+                            var ship_Id = item.SHIP_ID;
+                            var dsrc = item.DSRC;
+                            var utc_Seconds = item.UTC_SECONDS;
+                            var location2 = new google.maps.LatLng(lat2, lon2);
+                            planCoordinates2.push(location2);
+                            createMarker(location2, mmsi);
+                            map.setCenter(location2);
+                        });
+                       
+                    });
+            }
+
+            function createMarker(latlng, title) {
+                
+                var marker = new google.maps.Marker({
+                    position: latlng,
+                    title: title
+                });
+                
+
+                
+
+                
+            }
+        </script>
+        
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBmDA-SPW06WoDdLcL6ePaVUfhpeyVWCYc&callback=initMap"></script>
+    </body>
+</html>
